@@ -29,6 +29,8 @@ DESTINATION_TABLE_NAME = args.dest
 client = boto3.client('dynamodb', region_name=REGION_NAME)
 
 last_evaluated_key = True
+chunk_idx = 0
+total_items = 0
 
 while last_evaluated_key:
     if type(last_evaluated_key) == bool:
@@ -37,8 +39,6 @@ while last_evaluated_key:
         response = client.scan(TableName=SOURCE_TABLE_NAME,
                                ExclusiveStartKey=last_evaluated_key)
 
-    chunk_idx = 0
-    total_items = 0
     for chunk in chunks(response['Items'], 25):
         total_items += len(chunk)
         chunk_idx += 1
@@ -52,9 +52,10 @@ while last_evaluated_key:
                 batch_write_item['PutRequest']['Item'][k] = v
 
             batch_write[DESTINATION_TABLE_NAME].append(batch_write_item)
-        response = client.batch_write_item(RequestItems=batch_write)
+        client.batch_write_item(RequestItems=batch_write)
 
         print('Written chunk: {}'.format(chunk_idx))
-    last_evaluated_key = response.get('LastEvalutedKey', None)
+    last_evaluated_key = response.get('LastEvaluatedKey', None)
+    print('Last Evaluated Key: {}'.format(last_evaluated_key))
 
 print('Total items copied: {}'.format(total_items))
