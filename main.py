@@ -8,7 +8,7 @@ import json
 import decimal
 from boto3.dynamodb.conditions import Key, Attr
 
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser(description='Copy data from src DynamoDB table to dest')
 parser.add_argument('-src', help='source table name', required=True)
 parser.add_argument('-dest', help='destination table name', required=True)
 
