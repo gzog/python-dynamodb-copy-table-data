@@ -11,6 +11,7 @@ from boto3.dynamodb.conditions import Key, Attr
 parser = argparse.ArgumentParser(description='Copy data from src DynamoDB table to dest')
 parser.add_argument('-src', help='source table name', required=True)
 parser.add_argument('-dest', help='destination table name', required=True)
+parser.add_argument('-profile', help='aws profile to use', required=False)
 
 args = parser.parse_args()
 
@@ -26,7 +27,11 @@ REGION_NAME = os.environ.get('AWS_DEFAULT_REGION', 'eu-central-1')
 SOURCE_TABLE_NAME = args.src
 DESTINATION_TABLE_NAME = args.dest
 
-client = boto3.client('dynamodb', region_name=REGION_NAME)
+if args.profile:
+    session = boto3.session.Session(profile_name=args.profile)
+    client = session.client('dynamodb', region_name=REGION_NAME)
+else:
+    client = boto3.client('dynamodb', region_name=REGION_NAME)
 
 last_evaluated_key = True
 chunk_idx = 0
