@@ -2,5 +2,5 @@
 
 To run the command:
 ```python
-python main.py -src source-table -dest destination-table --profile=my-profile
+python main.py -src source-table -dest destination-table -profile=my-profile
 ```
