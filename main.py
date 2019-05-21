@@ -7,14 +7,15 @@ import boto3
 import json
 import decimal
 from boto3.dynamodb.conditions import Key, Attr
+import pdb
 
 parser = argparse.ArgumentParser(description='Copy data from src DynamoDB table to dest')
 parser.add_argument('-src', help='source table name', required=True)
 parser.add_argument('-dest', help='destination table name', required=True)
-parser.add_argument('-profile', help='aws profile to use', required=False)
+parser.add_argument('-src_profile', help='source profile to use', required=False)
+parser.add_argument('-dest_profile', help='destination profile to use', required=False)
 
 args = parser.parse_args()
-
 
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
@@ -27,11 +28,17 @@ REGION_NAME = os.environ.get('AWS_DEFAULT_REGION', 'eu-central-1')
 SOURCE_TABLE_NAME = args.src
 DESTINATION_TABLE_NAME = args.dest
 
-if args.profile:
-    session = boto3.session.Session(profile_name=args.profile)
-    client = session.client('dynamodb', region_name=REGION_NAME)
+if args.src_profile:
+    src_session = boto3.session.Session(profile_name=args.src_profile)
+    src_client = src_session.client('dynamodb', region_name=REGION_NAME)
 else:
-    client = boto3.client('dynamodb', region_name=REGION_NAME)
+    src_client = boto3.client('dynamodb', region_name=REGION_NAME)
+
+if args.dest_profile:
+    dest_session = boto3.session.Session(profile_name=args.dest_profile)
+    dest_client = dest_session.client('dynamodb', region_name=REGION_NAME)
+else:
+    dest_client = boto3.client('dynamodb', region_name=REGION_NAME)
 
 last_evaluated_key = True
 chunk_idx = 0
@@ -39,9 +46,9 @@ total_items = 0
 
 while last_evaluated_key:
     if type(last_evaluated_key) == bool:
-        response = client.scan(TableName=SOURCE_TABLE_NAME)
+        response = src_client.scan(TableName=SOURCE_TABLE_NAME)
     else:
-        response = client.scan(TableName=SOURCE_TABLE_NAME,
+        response = src_client.scan(TableName=SOURCE_TABLE_NAME,
                                ExclusiveStartKey=last_evaluated_key)
 
     for chunk in chunks(response['Items'], 25):
@@ -57,7 +64,7 @@ while last_evaluated_key:
                 batch_write_item['PutRequest']['Item'][k] = v
 
             batch_write[DESTINATION_TABLE_NAME].append(batch_write_item)
-        client.batch_write_item(RequestItems=batch_write)
+        dest_client.batch_write_item(RequestItems=batch_write)
 
         print('Written chunk: {}'.format(chunk_idx))
     last_evaluated_key = response.get('LastEvaluatedKey', None)
