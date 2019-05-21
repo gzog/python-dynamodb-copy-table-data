@@ -9,13 +9,17 @@ import decimal
 from boto3.dynamodb.conditions import Key, Attr
 import pdb
 
-parser = argparse.ArgumentParser(description='Copy data from src DynamoDB table to dest')
+parser = argparse.ArgumentParser(
+    description='Copy data from src DynamoDB table to dest')
 parser.add_argument('-src', help='source table name', required=True)
 parser.add_argument('-dest', help='destination table name', required=True)
-parser.add_argument('-src_profile', help='source profile to use', required=False)
-parser.add_argument('-dest_profile', help='destination profile to use', required=False)
+parser.add_argument(
+    '-src_profile', help='source profile to use', required=False)
+parser.add_argument(
+    '-dest_profile', help='destination profile to use', required=False)
 
 args = parser.parse_args()
+
 
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
@@ -49,7 +53,7 @@ while last_evaluated_key:
         response = src_client.scan(TableName=SOURCE_TABLE_NAME)
     else:
         response = src_client.scan(TableName=SOURCE_TABLE_NAME,
-                               ExclusiveStartKey=last_evaluated_key)
+                                   ExclusiveStartKey=last_evaluated_key)
 
     for chunk in chunks(response['Items'], 25):
         total_items += len(chunk)
