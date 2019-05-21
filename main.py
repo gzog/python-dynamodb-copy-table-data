@@ -7,7 +7,6 @@ import boto3
 import json
 import decimal
 from boto3.dynamodb.conditions import Key, Attr
-import pdb
 
 parser = argparse.ArgumentParser(
     description='Copy data from src DynamoDB table to dest')
