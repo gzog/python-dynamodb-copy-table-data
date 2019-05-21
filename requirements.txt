@@ -1,8 +1,8 @@
 autopep8==1.4.3
 boto3==1.9.130
-botocore==1.12.130
+botocore==1.12.106
 docutils==0.14
-futures==3.2.0
+futures==3.1.1
 jmespath==0.9.4
 pycodestyle==2.5.0
 python-dateutil==2.8.0
